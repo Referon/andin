@@ -70,6 +70,15 @@ class FeedFragment : Fragment() {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
 
+        binding.refresh.setColorSchemeResources(
+            android.R.color.holo_blue_bright
+        )
+
+        binding.refresh.setOnRefreshListener {
+            viewModel.loadPosts()
+            binding.refresh.setRefreshing(false)
+        }
+
         return binding.root
     }
 }

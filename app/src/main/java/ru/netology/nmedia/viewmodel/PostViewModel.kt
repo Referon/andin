@@ -74,6 +74,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         thread { repository.likeById(id) }
     }
 
+    fun disLikeById(id: Long) {
+        thread { repository.disLikeById(id) }
+    }
+
     fun removeById(id: Long) {
         thread {
             // Оптимистичная модель

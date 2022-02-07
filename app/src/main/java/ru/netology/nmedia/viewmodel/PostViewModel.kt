@@ -36,7 +36,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     fun loadPosts() {
         thread {
             // Начинаем загрузку
-            _data.postValue(FeedModel(loading = true))
+            _data.postValue(FeedModel(loading = true, refreshing = true))
             try {
                 // Данные успешно получены
                 val posts = repository.getAll()

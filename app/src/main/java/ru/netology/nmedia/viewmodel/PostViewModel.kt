@@ -6,8 +6,6 @@ import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.*
 import ru.netology.nmedia.util.SingleLiveEvent
-import java.io.IOException
-import kotlin.concurrent.thread
 
 private val empty = Post(
     id = 0,
@@ -35,20 +33,20 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun loadPosts() {
         _data.value = FeedModel(loading = true, refreshing = true)
-        repository.getAllAsync(object  : PostRepository.GetAllCallback{
+        repository.getAllAsync(object  : PostRepository.Callback<List<Post>>{
             override fun onSuccess(posts: List<Post>) {
                 _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
             }
 
             override fun onError(e: Exception) {
-                _data.postValue(FeedModel(error = true))
+                _data.postValue(FeedModel(error = true, errorCode = e.message.toString()))
             }
         })
     }
 
     fun save() {
         edited.value?.let {
-            repository.save(it, object : PostRepository.PostCallback{
+            repository.save(it, object : PostRepository.Callback<Post>{
                 override fun onSuccess(posts: Post) {
                     _postCreated.postValue(Unit)
                 }
@@ -74,7 +72,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun likeById(id: Long) {
-        repository.likeById(id, object : PostRepository.PostCallback{
+        repository.likeById(id, object : PostRepository.Callback<Post>{
             override fun onSuccess(posts: Post) {
                 _data.postValue(
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
@@ -88,12 +86,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
             override fun onError(e: Exception) {
                 _data.postValue(_data.value?.copy(posts = oldPost))
+                _data.postValue(FeedModel(error = true, errorCode = e.message.toString()))
             }
         })
     }
 
     fun disLikeById(id: Long) {
-        repository.disLikeById(id, object : PostRepository.PostCallback{
+        repository.disLikeById(id, object : PostRepository.Callback<Post>{
             override fun onSuccess(posts: Post) {
                 _data.postValue(
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
@@ -112,8 +111,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun removeById(id: Long) {
-        repository.removeById(id, object : PostRepository.ByIdCallback{
-            override fun onSuccess(id: Long) {
+        repository.removeById(id, object : PostRepository.Callback<Unit>{
+            override fun onSuccess(unit: Unit) {
                 _data.postValue(
                     _data.value?.copy(posts = _data.value?.posts.orEmpty()
                         .filter { it.id != id })

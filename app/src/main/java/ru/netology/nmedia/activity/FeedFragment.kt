@@ -9,6 +9,8 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
@@ -72,7 +74,16 @@ class FeedFragment : Fragment() {
             binding.errorGroup.isVisible = state.error
             binding.emptyText.isVisible = state.empty
             binding.refresh.isRefreshing = state.refreshing
+            if (state.error) {
+                Snackbar.make(
+                    requireView(),
+                    state.errorCode,
+                    BaseTransientBottomBar.LENGTH_LONG
+                ).show()
+            }
         })
+
+
 
         binding.retryButton.setOnClickListener {
             viewModel.loadPosts()

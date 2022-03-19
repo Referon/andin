@@ -12,6 +12,7 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
+import ru.netology.nmedia.RetryTypes
 import ru.netology.nmedia.activity.NewPostFragment.Companion.textArg
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -68,18 +69,31 @@ class FeedFragment : Fragment() {
             }
         })
         binding.list.adapter = adapter
+
         viewModel.data.observe(viewLifecycleOwner, { state ->
             adapter.submitList(state.posts)
+            binding.emptyText.isVisible = state.empty
+        })
+
+        viewModel.dataState.observe(viewLifecycleOwner, { state ->
             binding.progress.isVisible = state.loading
             binding.errorGroup.isVisible = state.error
-            binding.emptyText.isVisible = state.empty
             binding.refresh.isRefreshing = state.refreshing
             if (state.error) {
                 Snackbar.make(
                     requireView(),
                     state.errorCode,
                     BaseTransientBottomBar.LENGTH_LONG
-                ).show()
+                ).setAction(R.string.retry_loading) {
+                    when (state.retryType) {
+                        RetryTypes.SAVE -> viewModel.retrySave(state.retryPost)
+                        RetryTypes.REMOVE -> viewModel.removeById(state.retryId)
+                        RetryTypes.LIKE -> viewModel.likeById(state.retryId)
+                        RetryTypes.DISLIKE -> viewModel.disLikeById(state.retryId)
+                        else -> viewModel.loadPosts()
+                    }
+                }
+                    .show()
             }
         })
 

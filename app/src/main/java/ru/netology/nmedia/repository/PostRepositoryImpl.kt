@@ -1,105 +1,101 @@
 package ru.netology.nmedia.repository
 
-import retrofit2.Call
-import retrofit2.Response
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import ru.netology.nmedia.PostsApi
+import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.entity.PostEntity
+import ru.netology.nmedia.entity.toDto
+import ru.netology.nmedia.entity.toEntity
+import ru.netology.nmedia.error.ApiException
+import ru.netology.nmedia.error.NetworkException
+import ru.netology.nmedia.error.UnknownException
+import java.io.IOException
+import java.lang.Exception
 
 
-class PostRepositoryImpl : PostRepository {
+class PostRepositoryImpl(private val dao: PostDao) : PostRepository {
 
-    override fun getAllAsync(callback: PostRepository.Callback<List<Post>>) {
-        PostsApi.retrofitService.getAll().enqueue(object : retrofit2.Callback<List<Post>> {
-            override fun onResponse(
-                call: retrofit2.Call<List<Post>>,
-                response: retrofit2.Response<List<Post>>
-            ) {
-                if (!response.isSuccessful) {
-                    callback.onError(java.lang.RuntimeException("error " + response.code().toString()))
-                    return
-                }
-                callback.onSuccess(
-                    response.body() ?: throw java.lang.RuntimeException("body in null")
-                )
+    override val data = dao.getAll().map { it.toDto() }
+
+    override suspend fun getAll() {
+        try {
+            val response = PostsApi.retrofitService.getAll()
+            if (!response.isSuccessful) {
+                throw ApiException(response.code(), response.message())
             }
-
-            override fun onFailure(call: retrofit2.Call<List<Post>>, t: Throwable) {
-                callback.onError(java.lang.RuntimeException(t))
-            }
-        })
+            val body = response.body() ?: throw ApiException(response.code(), response.message())
+            dao.insert(body.toEntity())
+        }catch (e: ApiException) {
+            throw e
+        } catch (e: IOException) {
+            throw NetworkException
+        } catch (e: Exception) {
+            throw UnknownException
+        }
     }
 
-    override fun likeById(id: Long, callback: PostRepository.Callback<Post>) {
-        PostsApi.retrofitService.likeById(id).enqueue(object : retrofit2.Callback<Post> {
-            override fun onResponse(
-                call: retrofit2.Call<Post>,
-                response: retrofit2.Response<Post>
-            ) {
-                if (!response.isSuccessful) {
-                    callback.onError(java.lang.RuntimeException("error " + response.code().toString()))
-                    return
-                }
-                callback.onSuccess(response.body() ?: throw java.lang.RuntimeException("error"))
+    override suspend fun likeById(id: Long) {
+        try {
+            dao.likeById(id)
+            val response = PostsApi.retrofitService.likeById(id)
+            if (!response.isSuccessful) {
+                throw ApiException(response.code(), response.message())
             }
-
-            override fun onFailure(call: retrofit2.Call<Post>, t: Throwable) {
-                callback.onError(java.lang.RuntimeException(t))
-            }
-        })
+            val body = response.body() ?: throw ApiException(response.code(), response.message())
+            dao.insert(PostEntity.fromDto(body))
+        }catch (e: IOException) {
+            throw NetworkException
+        } catch (e: Exception) {
+            throw UnknownException
+        }
     }
 
-    override fun disLikeById(id: Long, callback: PostRepository.Callback<Post>) {
-        PostsApi.retrofitService.disLikeById(id).enqueue(object : retrofit2.Callback<Post> {
-            override fun onResponse(
-                call: retrofit2.Call<Post>,
-                response: retrofit2.Response<Post>
-            ) {
-                if (!response.isSuccessful) {
-                    callback.onError(java.lang.RuntimeException("error " + response.code().toString()))
-                    return
-                }
-                callback.onSuccess(response.body() ?: throw java.lang.RuntimeException("error"))
+    override suspend fun save(post: Post) {
+        try {
+            val response = PostsApi.retrofitService.save(post)
+            if (!response.isSuccessful) {
+                throw ApiException(response.code(), response.message())
             }
-
-            override fun onFailure(call: retrofit2.Call<Post>, t: Throwable) {
-                callback.onError(java.lang.RuntimeException(t))
-            }
-        })
-
+            val body = response.body() ?: throw ApiException(response.code(), response.message())
+            dao.insert(PostEntity.fromDto(body))
+        }catch (e: IOException) {
+            throw NetworkException
+        } catch (e: Exception) {
+            throw UnknownException
+        }
     }
 
-    override fun save(post: Post, callback: PostRepository.Callback<Post>) {
-        PostsApi.retrofitService.save(post).enqueue(object : retrofit2.Callback<Post> {
-            override fun onResponse(
-                call: retrofit2.Call<Post>,
-                response: retrofit2.Response<Post>
-            ) {
-                if (!response.isSuccessful) {
-                    callback.onError(java.lang.RuntimeException("error " + response.code().toString()))
-                    return
-                }
-                callback.onSuccess(response.body() ?: throw java.lang.RuntimeException("rror"))
+    override suspend fun disLikeById(id: Long) {
+        try {
+            dao.likeById(id)
+            val response = PostsApi.retrofitService.disLikeById(id)
+            if (!response.isSuccessful) {
+                throw ApiException(response.code(), response.message())
             }
-
-            override fun onFailure(call: retrofit2.Call<Post>, t: Throwable) {
-                callback.onError(java.lang.RuntimeException(t))
-            }
-        })
+            val body = response.body() ?: throw ApiException(response.code(), response.message())
+            dao.insert(PostEntity.fromDto(body))
+        }catch (e: IOException) {
+            throw NetworkException
+        } catch (e: Exception) {
+            throw UnknownException
+        }
     }
 
-    override fun removeById(id: Long, callback: PostRepository.Callback<Unit>) {
-        PostsApi.retrofitService.removeById(id).enqueue(object : retrofit2.Callback<Unit> {
-            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-                if (!response.isSuccessful) {
-                    callback.onError(java.lang.RuntimeException("error " + response.code().toString()))
-                    return
-                }
-                callback.onSuccess(Unit)
+    override suspend fun removeById(id: Long) {
+        try {
+            dao.removeById(id)
+            val response = PostsApi.retrofitService.removeById(id)
+            if (!response.isSuccessful) {
+                throw ApiException(response.code(), response.message())
             }
-
-            override fun onFailure(call: Call<Unit>, t: Throwable) {
-                callback.onError(java.lang.RuntimeException(t))
-            }
-        })
+        }catch (e: IOException) {
+            throw NetworkException
+        } catch (e: Exception) {
+            throw UnknownException
+        }
     }
+
+
 }

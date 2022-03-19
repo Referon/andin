@@ -61,6 +61,7 @@ dependencies {
     def okhttp_version = "4.9.3"
     def play_services_base_version = "18.0.1"
 
+    implementation "androidx.room:room-ktx:$room_version"
     implementation "com.github.bumptech.glide:glide:$glide_version"
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"

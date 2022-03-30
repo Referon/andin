@@ -98,10 +98,8 @@ class FeedFragment : Fragment() {
         })
         binding.newPosts.visibility = View.GONE
         viewModel.newerCount.observe(viewLifecycleOwner) {
-            val text: String = binding.newPosts.text.toString() + it.toString()
-            binding.newPosts.text = text
             if (it > 0) {
-
+                binding.newPosts.text = getString(R.string.new_posts, it)
                 binding.newPosts.visibility = View.VISIBLE
             }
         }

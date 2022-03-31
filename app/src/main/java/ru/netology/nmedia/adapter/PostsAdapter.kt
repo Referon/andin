@@ -17,6 +17,7 @@ interface OnInteractionListener {
     fun onEdit(post: Post) {}
     fun onRemove(post: Post) {}
     fun onShare(post: Post) {}
+    fun onImage(post: Post) {}
 }
 
 class PostsAdapter(
@@ -40,7 +41,7 @@ class PostViewHolder(
 
     fun bind(post: Post) {
         val url = "http://10.0.2.2:9999/avatars/${post.authorAvatar}"
-        val urlAttachments = "http://10.0.2.2:9999/images/${post.attachment?.url}"
+        val urlAttachments = "http://10.0.2.2:9999/media/${post.attachment?.url}"
 
         binding.apply {
             author.text = post.author
@@ -96,6 +97,10 @@ class PostViewHolder(
 
             share.setOnClickListener {
                 onInteractionListener.onShare(post)
+            }
+
+            attachment.setOnClickListener {
+                onInteractionListener.onImage(post)
             }
         }
     }
